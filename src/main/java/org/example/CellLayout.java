@@ -14,7 +14,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
-import java.awt.Rectangle;
 import java.util.LinkedHashSet;
 
 @Slf4j
