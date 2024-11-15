@@ -14,6 +14,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.LayoutManager2;
+import java.awt.Rectangle;
 import java.util.LinkedHashSet;
 
 @Slf4j
@@ -118,16 +119,7 @@ public class CellLayout implements LayoutManager2 {
 
     @Override
     public void layoutContainer(Container parent) {
-        final Insets insets = parent.getInsets();
-        for (CompRef compRef : componentSet) {
-            final Constraints constraints = compRef.constraints();
-            final int startPixelX = (constraints.xStart * cellWidth) + insets.left;
-            final int startPixelY = (constraints.yStart * cellHeight) + insets.top;
-            final int widthPixels = constraints.width * cellWidth;
-            final int heightPixels = constraints.height * cellHeight;
-
-            compRef.component.setBounds(startPixelX, startPixelY, widthPixels, heightPixels);
-        }
+        doTheThing(parent);
     }
 
     @Override
@@ -156,6 +148,61 @@ public class CellLayout implements LayoutManager2 {
 
 
 
+    private void doTheThing(Container parent) {
+        final Insets insets = parent.getInsets();
+        final Dimension size = parent.getSize();
+        final int widthCells = (size.width - (insets.left + insets.right)) / cellWidth;
+        final int heightCells = (size.height - (insets.top + insets.bottom)) / cellHeight;
+
+        for (CompRef compRef : componentSet) {
+            final Constraints constraints = compRef.constraints();
+            if (!validate(constraints)) continue;
+
+            final Rec sizeInCells = size(widthCells, heightCells, constraints);
+
+            final int startPixelX = (sizeInCells.x * cellWidth) + insets.left;
+            final int startPixelY = (sizeInCells.y * cellHeight) + insets.top;
+            final int widthPixels = sizeInCells.width * cellWidth;
+            final int heightPixels = sizeInCells.height * cellHeight;
+
+            compRef.component.setBounds(startPixelX, startPixelY, widthPixels, heightPixels);
+        }
+    }
+
+    private boolean validate(Constraints usage) {
+        if (usage.xStart == -1 && usage.xOffset == -1) {
+            log.error("Missing x start component of. {}", usage);
+            return false;
+        }
+
+        if (usage.yStart == -1 && usage.yOffset == -1) {
+            log.error("Missing y start component of. {}", usage);
+            return false;
+        }
+
+        if (usage.width == -1 && usage.xRatio == -1) {
+            log.error("Missing width component of. {}", usage);
+            return false;
+        }
+
+        if (usage.height == -1 && usage.yRatio == -1) {
+            log.error("Missing height component of. {}", usage);
+            return false;
+        }
+
+        return true;
+    }
+
+    private Rec size(int width, int height, Constraints usage) {
+        final int xStart = (usage.xStart != -1) ? usage.xStart : (int) (width * usage.xOffset);
+        final int yStart = (usage.yStart != -1) ? usage.yStart : (int) (height * usage.yOffset);
+        final int width_ = (usage.width != -1) ? usage.width : (int) (width * usage.xRatio);
+        final int height_ = (usage.height != -1) ? usage.height : (int) (height * usage.yRatio);
+        return new Rec(xStart, yStart, width_, height_);
+    }
+
+
+
     public static Dimension cellSize(Graphics g, Font monoFont) {
         final FontMetrics fontMetrics = g.getFontMetrics(monoFont);
         return cellSize(fontMetrics);
@@ -175,17 +222,51 @@ public class CellLayout implements LayoutManager2 {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Constraints {
+        public Constraints(String id, int xStart, int yStart, int width, int height) {
+            this(id, xStart, yStart, -1, -1, width, height, -1, -1);
+        }
+
+        public Constraints(String id, int xStart, int yStart, float xRatio, float yRatio) {
+            this(id, xStart, yStart, -1, -1, -1, -1, xRatio, yRatio);
+        }
+
+        public Constraints(String id, float xOffset, float yOffset, int width, int height) {
+            this(id, -1, -1, xOffset, yOffset, width, height, -1, -1);
+        }
+
+        public Constraints(String id, float xOffset, float yOffset, float xRatio, float yRatio) {
+            this(id, -1, -1, xOffset, yOffset, -1, -1, xRatio, yRatio);
+        }
+
         public Constraints(int xStart, int yStart, int width, int height) {
-            this("NO_NAME_GIVEN", xStart, yStart, width, height);
+            this("NO_NAME_GIVEN", xStart, yStart, -1, -1, width, height, -1, -1);
+        }
+
+        public Constraints(int xStart, int yStart, float xRatio, float yRatio) {
+            this("NO_NAME_GIVEN", xStart, yStart, -1, -1, -1, -1, xRatio, yRatio);
+        }
+
+        public Constraints(float xOffset, float yOffset, int width, int height) {
+            this("NO_NAME_GIVEN", -1, -1, xOffset, yOffset, width, height, -1, -1);
+        }
+
+        public Constraints(float xOffset, float yOffset, float xRatio, float yRatio) {
+            this("NO_NAME_GIVEN", -1, -1, xOffset, yOffset, -1, -1, xRatio, yRatio);
         }
 
         private String id = "";
         private int xStart = 0;
         private int yStart = 0;
+        private float xOffset = -1;
+        private float yOffset = -1;
         private int width = 1;
         private int height = 1;
+        private float xRatio = -1;
+        private float yRatio = -1;
     }
 
     private record CompRef(Component component, Constraints constraints) { }
+
+    private record Rec(int x, int y, int width, int height) { }
 
 }

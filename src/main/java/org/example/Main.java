@@ -8,6 +8,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
@@ -34,6 +36,8 @@ public class Main {
         contentPane.setLayout(cellLayout);
 
         addAsicBox(monoSpacedFont, contentPane);
+        addCellBoxes(monoSpacedFont, contentPane);
+        addPanelWithBorder(contentPane);
 
         addOverlayingJLabel(monoSpacedFont, contentPane);
 
@@ -71,6 +75,35 @@ public class Main {
         contentPane.add(wikiExample, new Constraints(0, 20, 10, 10));
     }
 
+    private static void addCellBoxes(Font monoSpacedFont, Container contentPane) {
+        final CellBox cellBoxHoz = new CellBox(monoSpacedFont);
+        final CellBox cellBoxVert = new CellBox(monoSpacedFont);
+        final CellBox cellBoxRec = new CellBox(monoSpacedFont);
+
+        cellBoxHoz.setForeground(Color.WHITE);
+        cellBoxVert.setForeground(Color.WHITE);
+        cellBoxRec.setForeground(Color.WHITE);
+
+        final Constraints hozSize = new Constraints("hozBox", 0.1f, -1f, 0.8f, -1f);
+        hozSize.setYStart(1);
+        hozSize.setHeight(1);
+        contentPane.add(cellBoxHoz, hozSize);
+
+        final Constraints vertSize = new Constraints("vertBox", 0.1f, 0.1f, -1f, 0.6f);
+        vertSize.setWidth(1);
+        contentPane.add(cellBoxVert, vertSize);
+
+        contentPane.add(cellBoxRec, new Constraints("recBox", 0.2f, 0.2f, 0.4f, 0.4f));
+    }
+
+    private static void addPanelWithBorder(Container contentPane) {
+        final JPanel panel = new JPanel();
+        panel.setBackground(new Color(0xCB580797, true));
+        panel.setBorder(new LineBorder(new Color(0xDF5B15), 4));
+
+        contentPane.add(panel, new Constraints("panelWithBorder", 20, 20, 10, 5));
+    }
+
     private static void addOverlayingJLabel(Font monoSpacedFont, Container contentPane) {
         final CellLabel overlayText = new CellLabel(monoSpacedFont, "Overlay text");
         overlayText.setFont(monoSpacedFont);
@@ -79,8 +112,8 @@ public class Main {
     }
 
     private static void tilePanel(Container contentPane) {
-        final int tileWidth = 40;
-        final int tileHeight = 30;
+        final int tileWidth = 80;
+        final int tileHeight = 25;
 
         final Color lightGrey = new Color(0x808080);
         final Color midGrey = new Color(0x606060);
