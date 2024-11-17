@@ -3,6 +3,7 @@ package org.example;
 import lombok.extern.slf4j.Slf4j;
 import org.example.CellLayout.Constraints;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -11,8 +12,15 @@ import javax.swing.WindowConstants;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseWheelEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.awt.event.MouseWheelEvent.WHEEL_UNIT_SCROLL;
 
 
 @Slf4j
@@ -34,25 +42,29 @@ public class Main {
         contentPane.setBackground(new Color(0x202020));
         contentPane.setLayout(cellLayout);
 
-        addAsicBox(monoSpacedFont, contentPane);
-        addCellBoxes(monoSpacedFont, contentPane);
-        addPanelWithBorder(contentPane);
+        final ArrayList<JComponent> things = new ArrayList<>();
 
-        addOverlayingJLabel(monoSpacedFont, contentPane);
+        things.addAll(addAsicBox(contentPane));
+        things.addAll(addCellBoxes(contentPane));
+        things.addAll(addPanelWithBorder(contentPane));
+        things.addAll(addOverlayingJLabel(contentPane));
+        things.addAll(tilePanel(contentPane));
 
-        tilePanel(contentPane);
+        things.forEach(thing -> thing.setFont(monoSpacedFont));
+
+        final MouseAdapter changeFontSizeListener = createMouseAdaptor(
+                contentPane, cellLayout, things, monoSpacedFont
+        );
+        contentPane.addMouseWheelListener(changeFontSizeListener);
 
         frame.setVisible(true);
     }
 
-    private static void addAsicBox(Font monoSpacedFont, Container contentPane) {
+    private static List<JComponent> addAsicBox(Container contentPane) {
         final JLabel topBar =    new JLabel("┌│───┐");
         final JLabel middleBar = new JLabel("││   │");
         final JLabel bottomBar = new JLabel("└│y!───┘");
 
-        topBar.setFont(monoSpacedFont);
-        middleBar.setFont(monoSpacedFont);
-        bottomBar.setFont(monoSpacedFont);
         topBar.setForeground(Color.WHITE);
         middleBar.setForeground(Color.WHITE);
         bottomBar.setForeground(Color.WHITE);
@@ -63,7 +75,6 @@ public class Main {
 
 
         final CellLabel wikiExample = new CellLabel(
-                monoSpacedFont,
                 """
                 ┌─┐ ┌┬┐
                 │ │ ├┼┤
@@ -72,12 +83,14 @@ public class Main {
         );
         wikiExample.setForeground(Color.WHITE);
         contentPane.add(wikiExample, new Constraints(0, 20, 10, 10));
+
+        return List.of(topBar, middleBar, bottomBar, wikiExample);
     }
 
-    private static void addCellBoxes(Font monoSpacedFont, Container contentPane) {
-        final CellBox cellBoxHoz = new CellBox(monoSpacedFont);
-        final CellBox cellBoxVert = new CellBox(monoSpacedFont);
-        final CellBox cellBoxRec = new CellBox(monoSpacedFont);
+    private static List<JComponent> addCellBoxes(Container contentPane) {
+        final CellBox cellBoxHoz = new CellBox();
+        final CellBox cellBoxVert = new CellBox();
+        final CellBox cellBoxRec = new CellBox();
 
         cellBoxHoz.setForeground(Color.WHITE);
         cellBoxVert.setForeground(Color.WHITE);
@@ -93,24 +106,29 @@ public class Main {
         contentPane.add(cellBoxVert, vertSize);
 
         contentPane.add(cellBoxRec, new Constraints("recBox", 0.2f, 0.2f, 0.4f, 0.4f));
+
+        return List.of(cellBoxHoz, cellBoxVert, cellBoxRec);
     }
 
-    private static void addPanelWithBorder(Container contentPane) {
+    private static List<JComponent> addPanelWithBorder(Container contentPane) {
         final JPanel panel = new JPanel();
         panel.setBackground(new Color(0xCB580797, true));
         panel.setBorder(new LineBorder(new Color(0xDF5B15), 4));
 
         contentPane.add(panel, new Constraints("panelWithBorder", 20, 20, 10, 5));
+
+        return List.of(panel);
     }
 
-    private static void addOverlayingJLabel(Font monoSpacedFont, Container contentPane) {
-        final CellLabel overlayText = new CellLabel(monoSpacedFont, "Overlay text");
-        overlayText.setFont(monoSpacedFont);
+    private static List<JComponent> addOverlayingJLabel(Container contentPane) {
+        final CellLabel overlayText = new CellLabel("Overlay text");
         overlayText.setForeground(Color.WHITE);
         contentPane.add(overlayText, new Constraints("overlayText", 0, 0, 30, 1));
+
+        return List.of(overlayText);
     }
 
-    private static void tilePanel(Container contentPane) {
+    private static List<JComponent> tilePanel(Container contentPane) {
         final int tileWidth = 80;
         final int tileHeight = 25;
 
@@ -126,6 +144,35 @@ public class Main {
             }
         }
         log.error("Done tilling");
+
+        return List.of();
+    }
+
+    private static MouseAdapter createMouseAdaptor(
+            Container contentPane, CellLayout cellLayout, List<JComponent> things, Font monoSpacedFont
+    ) {
+        return new MouseAdapter() {
+            private Font font = monoSpacedFont;
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (!e.isControlDown()) return;
+                if (e.getScrollType() != WHEEL_UNIT_SCROLL) return;
+
+                final int newFontSize = font.getSize() - (int) Math.signum(e.getUnitsToScroll());
+                final int boundedSize = Math.max(4, Math.min(2000, newFontSize));
+                font = new Font(font.getName(), font.getStyle(), boundedSize);
+                final Dimension newCellSize = CellLayout.cellSize(contentPane.getGraphics(), font);
+
+                cellLayout.setCellSize(newCellSize);
+                things.forEach(thing -> thing.setFont(font));
+                contentPane.repaint();
+            }
+        };
+    }
+
+    private static Font makeFont(int size) {
+        return new Font("Courier New", Font.PLAIN, size);
     }
 
 

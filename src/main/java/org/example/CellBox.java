@@ -3,7 +3,6 @@ package org.example;
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 
@@ -22,20 +21,8 @@ public class CellBox extends JPanel {
         init();
     }
 
-    public CellBox(Font monoFont) {
-        setFont(monoFont);
-        init();
-    }
-
     private void init() {
         setBackground(new Color(0, 0, 0, 150));
-    }
-
-
-
-    @Override
-    public void setFont(Font f) {
-        super.setFont(f);
     }
 
 
