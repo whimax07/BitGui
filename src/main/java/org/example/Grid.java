@@ -56,6 +56,26 @@ public interface Grid<T> extends Collection<T> {
 
 
     // =================================================================================================================
+    // ==== Iterable Helper ============================================================================================
+
+    default Sequenced<T> iterable() {
+        return this::iterator;
+    }
+
+    default Sequenced<T> iterable(V2 start, Pattern pattern) {
+        return () -> iterator(start, pattern);
+    }
+
+    default Sequenced<Locatable<T>> locatableIterable() {
+        return this::locatableIterator;
+    }
+
+    default Sequenced<Locatable<T>> locatableIterable(V2 start, Pattern pattern) {
+        return () -> locatableIterator(start, pattern);
+    }
+
+
+    // =================================================================================================================
     // ==== Spliterators ===============================================================================================
 
     default Spliterator<T> spliterator(V2 start, Pattern pattern) {
@@ -137,6 +157,12 @@ public interface Grid<T> extends Collection<T> {
             return hasNext;
         }
 
+    }
+
+    @FunctionalInterface
+    interface Sequenced<T> extends Iterable<T> {
+        // TODO(Max): Work out if this adds anything over just using Iterable.
+        Sequence<T> iterator();
     }
 
     @FunctionalInterface

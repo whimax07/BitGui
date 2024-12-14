@@ -19,11 +19,11 @@ public class ListGrid<T> extends AbstractGrid<T> {
         this.data = data;
     }
 
-    public ListGrid<T> noCopy(List<List<T>> data) {
+    public static <T> ListGrid<T> noCopy(List<List<T>> data) {
         return new ListGrid<>(data);
     }
 
-    public ListGrid<T> immutable(List<List<T>> data) {
+    public static <T> ListGrid<T> immutable(List<List<T>> data) {
         final List<List<T>> unmodifiableCopy = data.stream()
                 .map(Collections::unmodifiableList)
                 .toList();
