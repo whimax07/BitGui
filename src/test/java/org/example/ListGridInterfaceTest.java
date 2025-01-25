@@ -35,4 +35,48 @@ public class ListGridInterfaceTest {
                 .forEach(System.out::println);
     }
 
+    /**
+     *   ┌───┬─────┐
+     *   │   │     │
+     *   ├─┐ ┼ ────┤
+     *   │         │
+     *   │ ┌ ┐ ──┐ │
+     *   │ │ │   │ │
+     *   ├─┼ ┼─┬ ┼ │
+     *   │     │   │
+     *   │ ┌ ──┼─┬ │
+     *   │ │   │   │
+     *   └─┴───┴───┘
+     *    N=1 , E=2 , S=4 ,  W=8
+     */
+    @Test
+    public void maze() {
+        List.of(
+                List.of( 2, 12,  6, 10, 10,  8),
+                List.of( 6, 15, 15, 10, 10, 12),
+                List.of( 1,  0,  0,  0,  0,  1),
+                List.of()
+        );
+
+        /*
+        var ref = grid.ref(start)
+
+        progress(visited, ref, pattern, patterns) {
+            var next = ref.tryNext(pattern)
+            if (isBad(next) || visited.contains(next.loc)) {
+                return bad;
+            }
+
+            visited.add(ref.loc);
+            for (newPattern : patterns) {
+                var result = progress(visited, next, newPattern, patterns)
+                if (isBad(result)) continue;
+                return result.append(ref);
+            }
+            return bad;
+
+        }
+         */
+    }
+
 }

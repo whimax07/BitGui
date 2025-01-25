@@ -25,7 +25,37 @@ public abstract class AbstractGrid<T> extends AbstractCollection<T> implements G
 
 
 
-    public record BrideLocatable<T>(T get, V2 location) implements Locatable<T> { }
+    public record LocationPair<T>(T get, V2 location) implements Locatable<T> { }
+
+    public static class UnsafePointer<T> {
+
+        private final Grid<T> grid;
+        private final V2 currentPos;
+
+
+
+        public UnsafePointer(Grid<T> grid, V2 item) {
+            this.grid = grid;
+            currentPos = item;
+        }
+
+
+
+        public Optional<T> current() {
+            return grid.tryGet(currentPos);
+        }
+
+        public V2 position() {
+            return currentPos;
+        }
+
+        public UnsafePointer<T> next(Pattern pattern) {
+            final Optional<V2> next = pattern.next(currentPos);
+            if (next.isEmpty()) return null;
+            return new UnsafePointer<>(grid, next.get());
+        }
+
+    }
 
 
 
@@ -96,8 +126,6 @@ public abstract class AbstractGrid<T> extends AbstractCollection<T> implements G
 
     }
 
-
-
     protected static class EmptySequence<T> implements Sequence<T> {
 
         public static final EmptySequence<?> EMPTY_SEQUENCE = new EmptySequence<>();
@@ -134,6 +162,8 @@ public abstract class AbstractGrid<T> extends AbstractCollection<T> implements G
 
     }
 
+
+
     private static class SequenceBride<T> implements Sequence<Locatable<T>> {
 
         private final Sequence<T> position;
@@ -166,7 +196,7 @@ public abstract class AbstractGrid<T> extends AbstractCollection<T> implements G
                     position.getClass().getSimpleName(), Sequence.class.getSimpleName()
             )));
 
-            return Optional.of(new BrideLocatable<>(peek, location));
+            return Optional.of(new LocationPair<>(peek, location));
         }
 
         @Override
@@ -185,7 +215,7 @@ public abstract class AbstractGrid<T> extends AbstractCollection<T> implements G
             // If loc is null next will throw due to Sequence's preconditions.
             final V2 loc = position.peekLocation().orElse(null);
             final T next = position.next();
-            return new BrideLocatable<>(next, loc);
+            return new LocationPair<>(next, loc);
         }
 
     }

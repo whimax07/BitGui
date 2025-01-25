@@ -28,6 +28,14 @@ public interface Grid<T> extends Collection<T> {
         return get(position.x, position.y);
     }
 
+    default Optional<T> tryGet(V2 position) {
+        if (exists(position)) {
+            final T value = get(position);
+            return Optional.ofNullable(value);
+        }
+        return Optional.empty();
+    }
+
     boolean exists(int x, int y);
 
     default boolean exists(V2 position) {
