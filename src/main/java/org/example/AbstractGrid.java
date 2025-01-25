@@ -41,7 +41,14 @@ public abstract class AbstractGrid<T> extends AbstractCollection<T> implements G
 
 
 
-        public Optional<T> current() {
+        /**
+         * Nullable version of peek. Tries to get the element the pointer points to. Null if it doesn't exist.
+         */
+        public T poll() {
+            return grid.tryGet(currentPos).orElse(null);
+        }
+
+        public Optional<T> peek() {
             return grid.tryGet(currentPos);
         }
 

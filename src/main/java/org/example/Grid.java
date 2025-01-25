@@ -10,14 +10,14 @@ import java.util.stream.StreamSupport;
 
 public interface Grid<T> extends Collection<T> {
 
-    Pattern NORTH      = new IncrementingPattern( 0, -1);
-    Pattern SOUTH      = new IncrementingPattern( 0,  1);
-    Pattern EAST       = new IncrementingPattern( 1,  0);
-    Pattern WEST       = new IncrementingPattern(-1,  0);
-    Pattern NORTH_EAST = new IncrementingPattern( 1, -1);
-    Pattern NORTH_WEST = new IncrementingPattern(-1, -1);
-    Pattern SOUTH_EAST = new IncrementingPattern( 1,  1);
-    Pattern SOUTH_WEST = new IncrementingPattern(-1,  1);
+    Pattern NORTH      = CardanlPattern.NORTH;
+    Pattern SOUTH      = CardanlPattern.SOUTH;
+    Pattern EAST       = CardanlPattern.EAST;
+    Pattern WEST       = CardanlPattern.WEST;
+    Pattern NORTH_EAST = CardanlPattern.NORTH_EAST;
+    Pattern NORTH_WEST = CardanlPattern.NORTH_WEST;
+    Pattern SOUTH_EAST = CardanlPattern.SOUTH_EAST;
+    Pattern SOUTH_WEST = CardanlPattern.SOUTH_WEST;
 
     // =================================================================================================================
     // ==== Basic Accessors ============================================================================================
@@ -164,7 +164,6 @@ public interface Grid<T> extends Collection<T> {
             if (hasNext) nextLocation();
             return hasNext;
         }
-
     }
 
     @FunctionalInterface
@@ -183,6 +182,34 @@ public interface Grid<T> extends Collection<T> {
     record V2(int x, int y) {}
 
     record IncrementingPattern(int xIncrement, int yIncrement) implements Pattern {
+        @Override
+        public Optional<V2> next(V2 current) {
+            final int newX = current.x + xIncrement;
+            final int newY = current.y + yIncrement;
+            return Optional.of(new V2(newX, newY));
+        }
+    }
+
+
+
+    enum CardanlPattern implements Pattern {
+        NORTH     ( 0, -1),
+        SOUTH     ( 0,  1),
+        EAST      ( 1,  0),
+        WEST      (-1,  0),
+        NORTH_EAST( 1, -1),
+        NORTH_WEST(-1, -1),
+        SOUTH_EAST( 1,  1),
+        SOUTH_WEST(-1,  1);
+
+        CardanlPattern(int x, int y) {
+            xIncrement = x;
+            yIncrement = y;
+        }
+
+        private final int xIncrement;
+        private final int yIncrement;
+
         @Override
         public Optional<V2> next(V2 current) {
             final int newX = current.x + xIncrement;
